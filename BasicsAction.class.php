@@ -281,7 +281,7 @@ class BasicsAction extends UserAction
 
 
 	/**
-     * 生成唯一订单号
+     * 生成唯一订单号  ( 这个已经是不给力了---暂不用 )
      */
 	public function build_order_no()
 	{
@@ -293,6 +293,28 @@ class BasicsAction extends UserAction
 		return $no;
 
 	}
+	
+	
+	/**
+     * 生成唯一号  ( 终极版 )
+     */
+	public function build_order_no($db,&$no)
+	{
+		$no1 = substr(implode(NULL, array_map('ord', str_split(substr(uniqid(), 7, 13), 1))), 0, 4);
+
+		$no2 = mt_rand(1111,9999);
+		$no = $no1.' '.$no2;
+
+		// 查询所有
+		$where['code'] = array('in',$no);
+		$info = M("$db")->field('id,code')->where($where)->select();
+		if(!empty($info) && $no)
+		{
+			$this->build_order_no($db,$no);
+		}
+		return $no;
+	}
+
 	
 	/* 生成随机不重复用户的抽奖码 */
 	public function s()
