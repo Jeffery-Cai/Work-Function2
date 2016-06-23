@@ -598,6 +598,24 @@ class BasicsAction extends UserAction
     });
 */
 
+/************** 方法 ：未登录情况下 ****/
+if(empty($_COOKIE['pc_mendian'])){
+			if(ACTION_NAME!='login')
+			{
+				$this->MendianFunc->trulLogin();
+			}
+		}
+
+
+
+
+/* 未登录就跳转 */
+	public function trulLogin()
+	{
+		$url = './index.php?g=Wap&m=Mendian&a=login';
+		echo '<script type="text/javascript">alert("您未登录，正在跳转到登录页面");window.location.href = "'.$url.'"; </script>';
+	}
+
 }
 
 
