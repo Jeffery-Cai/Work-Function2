@@ -616,6 +616,79 @@ if(empty($_COOKIE['pc_mendian'])){
 		echo '<script type="text/javascript">alert("您未登录，正在跳转到登录页面");window.location.href = "'.$url.'"; </script>';
 	}
 
+	
+/* 从1转到一，二，三方法 ... */	
+	public function getvideo($cart){
+		if($cart=='paihang'){
+			$list = M('video')->where(array('is_recycle'=>0))->order('visit desc')->select();
+		}else if($cart='new'){
+			$list = M('video')->where(array('is_recycle'=>0))->order('addtime desc')->select();
+		}else{
+			$list = M('video')->where(array('is_recycle'=>0))->select();
+		}
+		foreach ($list as $k => $v) {
+			$kpai = array(1,2,3,4,5,6,7,8,9);
+			$kpaiQ = array('二','三','四','五','六','七','八','九','十');
+
+			// 判断是否是$k = 0（第一名）
+			if($k == 0)
+			{
+				$kpaiRe = str_replace('0', '一', $k);
+			}else{
+				$kpaiRe = $this->numToWord($k);
+			}
+			$list[$k]['paixu'] = $kpaiRe;
+			$list[$k]['kp'] = $k;
+		}
+
+		return $list;
+	}
+
+		/**
+		* @author  ja颂 
+		* 把数字1-1亿换成汉字表述，如：123->一百二十三
+		* @param [num] $num [数字]
+		* @return [string] [string]
+		*/
+		public function numToWord($num)
+		{
+			$chiNum = array('一', '二', '三', '四', '五', '六', '七', '八', '九');
+			$chiUni = array('','十', '百', '千', '万', '亿', '十', '百', '千');
+			$chiStr = '';
+
+			$num_str = (string)$num;
+			$count = strlen($num_str);
+		$last_flag = true; //上一个 是否为0
+		$zero_flag = true; //是否第一个
+		$temp_num = null; //临时数字
+
+		$chiStr = '';//拼接结果
+		if ($count == 2) {//两位数
+			$temp_num = $num_str[0];
+			$chiStr = $temp_num == 1 ? $chiUni[1] : $chiNum[$temp_num].$chiUni[1];
+			$temp_num = $num_str[1];
+			$chiStr .= $temp_num == 0 ? '' : $chiNum[$temp_num]; 
+		}else if($count > 2){
+			$index = 0;
+			for ($i=$count-1; $i >= 0 ; $i--) { 
+				$temp_num = $num_str[$i];
+				if ($temp_num == 0) {
+					if (!$zero_flag && !$last_flag ) {
+						$chiStr = $chiNum[$temp_num]. $chiStr;
+						$last_flag = true;
+					}
+				}else{
+					$chiStr = $chiNum[$temp_num].$chiUni[$index%9] .$chiStr;
+					$zero_flag = false;
+					$last_flag = false;
+				}
+				$index ++;
+			}
+		}else{
+			$chiStr = $chiNum[$num_str[0]]; 
+		}
+		return $chiStr;
+	}
 }
 
 
