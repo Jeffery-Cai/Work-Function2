@@ -692,4 +692,42 @@ if(empty($_COOKIE['pc_mendian'])){
 }
 
 
+
+/***************  微信预览图片接口  *****************/
+//js 
+<script type="text/javascript" src="http://res.wx.qq.com/open/js/jweixin-1.0.0.js"></script>
+
+
+if( window.addEventListener ){
+            window.addEventListener('load', function() {
+                
+                var imgs = $('#pb1').find("img"),//查找要放大的图片
+
+                    imgsSrc = [],
+                    minWidth = 0;;
+                
+                for( var i=0,l=imgs.length; i<l; i++ ){
+                    var src = imgs[i].src;
+                    if( src ){
+                        imgsSrc.push(src);
+                        (function(src){
+                            imgs[i].addEventListener('click', function(){
+                                reviewImage(src);
+                            });
+                        })(src);
+                    }
+                }
+        
+                function reviewImage(src) {
+                    if (typeof window.WeixinJSBridge != 'undefined') {
+                        WeixinJSBridge.invoke('imagePreview', {
+                            'current' : src,
+                            'urls' : imgsSrc
+                        });
+                    }
+                }
+            }, false);
+        }
+
+
 ?>
