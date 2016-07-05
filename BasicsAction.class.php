@@ -691,6 +691,36 @@ if(empty($_COOKIE['pc_mendian'])){
 	}
 }
 
+/***************  li变单选  *****************/
+// html
+						<dd id="xm" value="radio">
+                        <ul>
+                            <li class="but1 checked" value="1">男单</li>
+                            <li class="but1" value="2">男双</li>
+                        </ul>
+                        <ul>
+                            <li class="but1 color-8309ff" value="3">女单</li>
+                            <li class="but1 color-8309ff" value="4">女双</li>
+                        </ul>
+                        <ul>
+                            <li class="but1 color-ffce09" value="5">混双</li>
+                        </ul>
+                        <input type="hidden" id="ul1_value" value="1">
+                    </dd>
+
+// js
+	$("#xm li").click(function(){
+      $(this).toggleClass("checked");
+      $("#xm li[value!='"+ $(this).attr("value")+"']").removeClass("checked");
+
+      if($(this).attr("class").indexOf("checked") > 0){
+       ul1_value = $(this).attr("value");
+      }else{
+        ul1_value = 1;
+      }
+      $("#ul1_value").val(ul1_value);
+      ul1_value = "";
+     });
 
 
 /***************  微信预览图片接口  *****************/
