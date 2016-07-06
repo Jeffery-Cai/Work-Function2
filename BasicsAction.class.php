@@ -1,9 +1,11 @@
 ﻿<?php
 /**
 * 基础函数库
-* @author     : Jeffery
 * @createtime : 2016-1-31
-* @updatetime : 2016-1-31
+* HTML + thinkphp帮助例子
+* @help : 本案例都是完全由thinkphp编写
+* @author : Jeffery
+* @help-email : 1345199080@qq.com
 */
 class BasicsAction extends UserAction
 {
@@ -183,9 +185,13 @@ class BasicsAction extends UserAction
 				break;
 			}
 		}
-		
-		//用php从身份证中提取生日,包括15位和18位身份证 
-		function getIDCardInfo($IDCard){ 
+
+		/**
+		 * 用php从身份证中提取生日,包括15位和18位身份证
+		 * @param $IDCard : 身份证号码
+		 */
+		publc function getIDCardInfo($IDCard)
+		{
 			$result['error']=0;//0：未知错误，1：身份证格式错误，2：无错误 
 			$result['flag']='';//0标示成年，1标示未成年 
 			$result['tdate']='';//生日，格式如：2012-11-15 
@@ -235,418 +241,145 @@ class BasicsAction extends UserAction
 			$result['isAdult']=$flag;//0标示成年，1标示未成年 
 			$result['birthday']=$tdate;//生日日期 
 			return $result; 
-		} 
-		
+		}
+
 		/**
-     * 函数说明：验证身份证是否真实
-     * 注：加权因子和校验码串为互联网统计  尾数自己测试11次 任意身份证都可以通过
-     * 传递参数：
-     * $number身份证号码
-     * 返回参数：
-     * true验证通过
-     * false验证失败
-     */
-		function isIdCard($number) {
+	     * 函数说明：验证身份证是否真实
+	     * 注：加权因子和校验码串为互联网统计  尾数自己测试11次 任意身份证都可以通过
+	     * 传递参数：
+	     * $number身份证号码
+	     * 返回参数：
+	     * true验证通过
+	     * false验证失败
+	     */
+		public function isIdCard($number)
+		{
 			$sigma = '';
-        //加权因子 
+        	//加权因子 
 			$wi = array(7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2);
-        //校验码串 
+        	//校验码串 
 			$ai = array('1', '0', 'X', '9', '8', '7', '6', '5', '4', '3', '2');
-        //按顺序循环处理前17位 
+        	//按顺序循环处理前17位 
 			for ($i = 0;$i < 17;$i++) { 
-            //提取前17位的其中一位，并将变量类型转为实数 
+            	//提取前17位的其中一位，并将变量类型转为实数 
 				$b = (int) $number{$i}; 
-            //提取相应的加权因子 
+            	//提取相应的加权因子 
 				$w = $wi[$i]; 
-            //把从身份证号码中提取的一位数字和加权因子相乘，并累加 得到身份证前17位的乘机的和 
+            	//把从身份证号码中提取的一位数字和加权因子相乘，并累加 得到身份证前17位的乘机的和 
 				$sigma += $b * $w;
 			}
-    //echo $sigma;die;
-        //计算序号  用得到的乘机模11 取余数
+        	//计算序号  用得到的乘机模11 取余数
 			$snumber = $sigma % 11; 
-        //按照序号从校验码串中提取相应的余数来验证最后一位。 
+        	//按照序号从校验码串中提取相应的余数来验证最后一位。 
 			$check_number = $ai[$snumber];
 			if ($number{17} == $check_number) {
 				return true;
 			} else {
 				return false;
 			}
-		}
-    //eg
-		if (!isIdCard('000000000000000001')) {
-			echo "身份证号码不合法";
-		} else {
-			echo "身份证号码正确";
-		}
-
-
-	/**
-     * 生成唯一订单号  ( 这个已经是不给力了---暂不用 )
-     */
-	public function build_order_no()
-	{
-		$no = date('Ymd').substr(implode(NULL, array_map('ord', str_split(substr(uniqid(), 7, 13), 1))), 0, 8);
-        //检测是否存在
-		$db = M('Order');
-		$info = $db->where(array('number'=>$no))->find();
-		(!empty($info)) && $no = $this->build_order_no();
-		return $no;
-
-	}
-	
-	
-	/**
-     * 生成唯一号  ( 最终不支持php高版本版 )
-     */
-	public function build_order_no($db,&$no)
-	{
-		$no1 = substr(implode(NULL, array_map('ord', str_split(substr(uniqid(), 7, 13), 1))), 0, 4);
-
-		$no2 = mt_rand(1111,9999);
-		$no = $no1.' '.$no2;
-
-		// 查询所有
-		$where['code'] = array('in',$no);
-		$info = M("$db")->field('id,code')->where($where)->select();
-		if(!empty($info) && $no)
-		{
-			$this->build_order_no($db,$no);
-		}
-		return $no;
-	}
-	
-	/**
-     * 生成唯一号 ( 最终支持版 )
-     */
-	public function build_order_no($db,$no)
-	{
-		global $no;
-		$no1 = substr(implode(NULL, array_map('ord', str_split(substr(uniqid(), 7, 13), 1))), 0, 4);
-
-		$no2 = mt_rand(1111,9999);
-		$no = $no1.' '.$no2;
-
-		// 查询所有
-		$where['code'] = array('in',$no);
-		$info = M("$db")->field('id,code')->where($where)->select();
-		if(!empty($info) && $no)
-		{
-			$this->build_order_no($db,$no);
-		}
-		return $no;
-	}
-
-	
-	/* 生成随机不重复用户的抽奖码 */
-	public function s()
-	{
-		$num = intval($_POST['num']);
-		if($num != '')
-		{
-
-                // 判断数据库是否已经有这些了
-			$username = M('choujiang')->where($where)->getField('username',true);
-			if($username!='')
-			{
-                    // $where['is_choose'] = 0;
-				$idinwhere['username'] = array('not in',$username);
-				$idin = M('choujiang')->Distinct(true)->group('username')->field('id,username')->limit($num)->order('rand()')->where($idinwhere)->getField('id',true);
-				$where1['id'] = array('in',$idin);
-				$where1['is_choose'] = array('neq',1);
-				$username = M('choujiang')->where(array('id'=>$where1['id']))->getField('username',true);
-                    $is_au = M('choujiang')->where(array('username'=>array('in',$username),'is_choose'=>1))->getField('id',true);  // true = 重复了 , false = 反之
-                    // dump($is_au);die;
-                    if(!$is_au){
-                    	$res = M('choujiang')->where($where1)->save(array('is_choose'=>1,'choose_time'=>time()));
-                    	$this->success('中奖码生成成功',U('Choujiang/setChoujiang',array('token'=>$this->token)));exit;
-                    }else{
-
-                    	$this->success('请重新生成',U('Choujiang/setChoujiang',array('token'=>$this->token)));exit;
-                    }
-                }else{
-                    // 再生成一遍
-                	$idin = M('choujiang')->Distinct(true)->group('username')->field('id,username')->limit($num)->order('rand()')->getField('id',true);
-                	$where1['id'] = array('in',$idin);
-                	$where1['is_choose'] = array('neq',1);
-                	$username = M('choujiang')->where(array('id'=>$where1['id']))->getField('username',true);
-                        $is_au = M('choujiang')->where(array('username'=>array('in',$username),'is_choose'=>1))->getField('id',true);  // true = 重复了 , false = 反之
-                        // dump($is_au);die;
-                        if(!$is_au){
-                        	$res = M('choujiang')->where($where1)->save(array('is_choose'=>1,'choose_time'=>time()));
-                        	$this->success('中奖码生成成功',U('Choujiang/setChoujiang',array('token'=>$this->token)));exit;
-                        }else{
-
-                        	$this->success('请重新生成',U('Choujiang/setChoujiang',array('token'=>$this->token)));exit;
-                        }
-
-
-                    }
-                }else{
-                	$this->success('请输入中奖个数');exit;
-                }
-            }
-
-
-            /* 门店订单导出最终版本 （无缝修复）  -->PHP版本 */
-            public function MdOrderexcule()
-            {
-            	$filename='md_order'.date('Ymd',time());
-            	header("Content-type:application/vnd.ms-excel"); 
-            	header("Content-Disposition:attachment;filename=".$filename.".xls");
-            	$cartData = array();
-            	for ($i=0; $i <= 9; $i++) {
-            		if($i == 0)
-            		{
-            			$data.='订单型号'."\t";
-            			$data.='订单数量'."\t";
-            		}else{
-            			$data.='订单型号'.$i."\t";
-            			$data.='订单数量'.$i."\t";
-
-            		}
-            	}
-            	$orders = M('db')->order('addtime desc')->select();
-            	$arr = array();
-            	$data = array();
-            	if(!empty($orders)){
-            // 导出数据
-            		foreach ($orders as &$v) {
-            			$md_username = M('db')->where(array('id'=>$v['mdid']))->getField('username');
-					// 省份ID
-            			$sheng = M('region')->where(array('id'=>$v['md_provinceid']))->getField('region_name');
-            			$shi = M('region')->where(array('id'=>$v['md_shi']))->getField('region_name');
-            			if($v['yhq_sn'] == '')
-            			{
-            				$yhq_sn = '无';
-            			}else{
-            				$yhq_sn = $v['yhq_sn'];
-            			}
-            			$v['md_username'] = $md_username;
-            			$v['sheng'] = $sheng;
-            			$v['shi'] = $shi;
-            			$v['yhq_sn'] = $yhq_sn;
-            			$v['addtime'] = date("Y/m/d H:i:s",$v['addtime']);
-            		}
-            	}else{
-            		return array();
-            	}
-
-            	$this->assign('list',$orders);
-            	$this->display();
-            }
-
-	/* 门店订单导出最终版本  -->Html代码 
-	<html xmlns:o="urn:schemas-microsoft-com:office:office" 
- xmlns:x="urn:schemas-microsoft-com:office:excel" 
- xmlns="http://www.w3.org/TR/REC-html40"> 
- <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"> 
-
- <html> 
-     <head> 
-        <meta http-equiv="Content-type" content="text/html;charset=UTF-8" /> 
-         <style id="Classeur1_16681_Styles"></style> 
-     </head> 
-     <body> 
-         <div id="Classeur1_16681" align=center x:publishsource="Excel"> 
-             <table x:str border=1 cellpadding=0 cellspacing=0 width=100% style="border-collapse: collapse"> 
-                 <tr>
-                  <td class=xl2216681 nowrap>id</td>
-                  <td class=xl2216681 nowrap>门店用户</td>
-                  <td class=xl2216681 nowrap>门店所在省份</td>
-                  <td class=xl2216681 nowrap>门店所在城市</td>
-                  <td class=xl2216681 nowrap>消费者姓名</td>
-                  <td class=xl2216681 nowrap>消费者手机号</td>
-                  <td class=xl2216681 nowrap>消费者地址</td>
-                  <td class=xl2216681 nowrap>优惠券序号</td>
-                  <td class=xl2216681 nowrap>订单总价格</td>
-                  <for start="0" end="10">
-                  <if condition="$i == 0">
-                    <td class=xl2216681 nowrap>订单型号</td>
-                    <td class=xl2216681 nowrap>订单数量</td>
-                  <else/>
-                    <td class=xl2216681 nowrap>订单型号.{lanrain:$i}</td>
-                    <td class=xl2216681 nowrap>订单数量.{lanrain:$i}</td>
-                  </if>
-                  </for>
-                  <td class=xl2216681 nowrap>提交时间</td>
-
-                 </tr>
-                 <volist name="list" id="v">
-                  <tr>
-                    <td class=xl2216681 nowrap>{lanrain:$v['id']}</td>
-                    <td class=xl2216681 nowrap>{lanrain:$v['md_username']}</td>
-                    <td class=xl2216681 nowrap>{lanrain:$v['sheng']}</td>
-                    <td class=xl2216681 nowrap>{lanrain:$v['shi']}</td>
-                    <td class=xl2216681 nowrap>{lanrain:$v['username']}</td>
-                    <td class=xl2216681 nowrap>{lanrain:$v['phone']}</td>
-                    <td class=xl2216681 nowrap>{lanrain:$v['address']}</td>
-                    <td class=xl2216681 nowrap>{lanrain:$v['yhq_sn']}</td>
-                    <td class=xl2216681 nowrap>{lanrain:$v['price']}</td>
-                    <td class=xl2216681 nowrap>{lanrain:$v['xinghao']}</td>
-                    <td class=xl2216681 nowrap>{lanrain:$v['good_number']}</td>
-                    <td class=xl2216681 nowrap>{lanrain:$v['xinghao1']}</td>
-                    <td class=xl2216681 nowrap>{lanrain:$v['good_number1']}</td>
-                    <td class=xl2216681 nowrap>{lanrain:$v['xinghao2']}</td>
-                    <td class=xl2216681 nowrap>{lanrain:$v['good_number2']}</td>
-                    <td class=xl2216681 nowrap>{lanrain:$v['xinghao3']}</td>
-                    <td class=xl2216681 nowrap>{lanrain:$v['good_number3']}</td>
-                    <td class=xl2216681 nowrap>{lanrain:$v['xinghao4']}</td>
-                    <td class=xl2216681 nowrap>{lanrain:$v['good_number4']}</td>
-                    <td class=xl2216681 nowrap>{lanrain:$v['xinghao5']}</td>
-                    <td class=xl2216681 nowrap>{lanrain:$v['good_number5']}</td>
-                    <td class=xl2216681 nowrap>{lanrain:$v['xinghao6']}</td>
-                    <td class=xl2216681 nowrap>{lanrain:$v['good_number6']}</td>
-                    <td class=xl2216681 nowrap>{lanrain:$v['xinghao7']}</td>
-                    <td class=xl2216681 nowrap>{lanrain:$v['good_number7']}</td>
-                    <td class=xl2216681 nowrap>{lanrain:$v['xinghao8']}</td>
-                    <td class=xl2216681 nowrap>{lanrain:$v['good_number8']}</td>
-                    <td class=xl2216681 nowrap>{lanrain:$v['xinghao9']}</td>
-                    <td class=xl2216681 nowrap>{lanrain:$v['good_number9']}</td>
-                    <td class=xl2216681 nowrap>{lanrain:$v['addtime']}</td>
-                  </tr>
-                  </volist>
-             </table> 
-         </div> 
-     </body> 
- </html> 
- */
-
- /**************      在线客服聊天 ajax    */
- public function ajaxUserAbort()
- {
- 	$this->display();
- }
- public function ajaxX()
- {
- 	$sleep = 4;
- 	$token = 1003;
-			// ignore_user_abort(true);  // 一直挂起
- 	set_time_limit(0);
- 	$getRoot = getcwd();
- 	$dir	 = str_replace('\\','/',$getRoot);
- 	if (!file_exists($dir.'/testHe') || !is_dir($dir.'/testHe')){
- 		@mkdir($dir.'/testHe',0777);
- 	}
- 	$file = $dir.'/testHe/footers'.date("Ymd").'.log';
-			/*
-			do{
-				sleep($sleep);
-				$status = R('Web/Testfooter/sendTemplate',array($token));
-				$content = "[".date("Y-m-d H:i:s")."] 状态是 ：".$status."|正在进行...\n";
-				R('Web/Testfooter/setFile',array($file, $content));
-				if($status = 2)
-				{
-					break;
-					echo json_encode(array('data'=>'已经结束'));exit;
-				}else{
-					echo json_encode(array('data'=>'数据一直来'));exit;
+			/* eg
+				if (!isIdCard('000000000000000001')) {
+					echo "身份证号码不合法";
+				} else {
+					echo "身份证号码正确";
 				}
-
-			}while(true);
 			*/
-			$i = 0;
-			while (true){     
-			    //sleep(1);     
-			    sleep(1);//0.5秒     
-			    $i++;     
-			    //若得到数据则马上返回数据给客服端，并结束本次请求     
-			    $rand=rand(1,1);     
-			    if($rand<=15){     
-			    	$arr=array('success'=>"1",'name'=>'xiaocai','text'=>$rand);     
-			    	echo json_encode($arr);     
-			    	exit();
-			    }     
-			    //服务器($_POST['time']*0.5)秒后告诉客服端无数据     
-			    if($i==$_POST['time']){
-			    	$arr=array('success'=>"0",'name'=>'xiaocai','text'=>$rand);     
-			    	echo json_encode($arr);     
-			    	exit();
-			    }     
-			}
 		}
 
-
-/************************   js客服ajax **************
-	 $("#btn").bind('click',{btn : $("#btn")},function(evdata)
-    {
-         $.ajax({  
-            type:"POST",  
-            dataType:"json",  
-            url:'{lanrain::U("Server/ajaxX")}',  
-            timeout:80000,  //ajax请求超时时间80秒  
-            data:{time:"80"}, //40秒后无论结果服务器都返回数据  
-            success: function(data, textStatus) { 
-                //从服务器得到数据，显示数据并继续查询     
-                if (data.success == "1") { 
-                    $("#msg").append("<br>[有数据]" + data.text); 
-                    evdata.data.btn.click(); 
-                } 
-                //未从服务器得到数据，继续查询     
-                if (data.success == "0") { 
-                    $("#msg").append("<br>[无数据]"); 
-                    evdata.data.btn.click(); 
-                } 
-            }, 
-            //Ajax请求超时，继续查询     
-            error: function(XMLHttpRequest, textStatus, errorThrown) { 
-                if (textStatus == "timeout") { 
-                    $("#msg").append("<br>[超时]"); 
-                    evdata.data.btn.click(); 
-                } 
-            } 
-           });
-    });
-*/
-
-/************** 方法 ：未登录情况下 ****/
-if(empty($_COOKIE['pc_mendian'])){
-			if(ACTION_NAME!='login')
-			{
-				$this->MendianFunc->trulLogin();
-			}
-		}
-
-
-
-
-/* 未登录就跳转 */
-	public function trulLogin()
-	{
-		$url = './index.php?g=Wap&m=Mendian&a=login';
-		echo '<script type="text/javascript">alert("您未登录，正在跳转到登录页面");window.location.href = "'.$url.'"; </script>';
-	}
-
-	
-/* 从1转到一，二，三方法 ... */	
-	public function getvideo($cart){
-		if($cart=='paihang'){
-			$list = M('video')->where(array('is_recycle'=>0))->order('visit desc')->select();
-		}else if($cart='new'){
-			$list = M('video')->where(array('is_recycle'=>0))->order('addtime desc')->select();
-		}else{
-			$list = M('video')->where(array('is_recycle'=>0))->select();
-		}
-		foreach ($list as $k => $v) {
-			$kpai = array(1,2,3,4,5,6,7,8,9);
-			$kpaiQ = array('二','三','四','五','六','七','八','九','十');
-
-			// 判断是否是$k = 0（第一名）
-			if($k == 0)
-			{
-				$kpaiRe = str_replace('0', '一', $k);
-			}else{
-				$kpaiRe = $this->numToWord($k);
-			}
-			$list[$k]['paixu'] = $kpaiRe;
-			$list[$k]['kp'] = $k;
-		}
-
-		return $list;
-	}
 
 		/**
-		* @author  ja颂 
+	     * 生成唯一订单号  ( 这个已经是不给力了 --- 失效中)
+	     */
+		public function build_order_no1()
+		{
+			$no = date('Ymd').substr(implode(NULL, array_map('ord', str_split(substr(uniqid(), 7, 13), 1))), 0, 8);
+	        //检测是否存在
+			$db = M('Order');
+			$info = $db->where(array('number'=>$no))->find();
+			(!empty($info)) && $no = $this->build_order_no();
+			return $no;
+		}
+
+		/**
+	     * 生成唯一号  ( 最终不支持php高版本版，指针方式 )
+	     * @param $db : 数据表姓名
+	     * @param $no : 参数可不填写
+	     */
+		public function build_order_no2($db,&$no)
+		{
+			$no1 = substr(implode(NULL, array_map('ord', str_split(substr(uniqid(), 7, 13), 1))), 0, 4);
+
+			$no2 = mt_rand(1111,9999);
+			$no = $no1.' '.$no2;
+
+			// 查询所有
+			$where['code'] = array('in',$no);
+			$info = M("$db")->field('id,code')->where($where)->select();
+			if(!empty($info) && $no)
+			{
+				$this->build_order_no($db,$no);
+			}
+			return $no;
+		}
+
+		/**
+	     * 生成唯一号 ( 最终支持版，递归方式 )
+	     * @param $db : 数据表姓名
+	     * @param $no : 参数可不填写
+	     */
+		public function build_order_no3($db,$no)
+		{
+			global $no;
+			$no1 = substr(implode(NULL, array_map('ord', str_split(substr(uniqid(), 7, 13), 1))), 0, 4);
+
+			$no2 = mt_rand(1111,9999);
+			$no = $no1.' '.$no2;
+
+			// 查询所有
+			$where['code'] = array('in',$no);
+			$info = M("$db")->field('id,code')->where($where)->select();
+			if(!empty($info) && $no)
+			{
+				$this->build_order_no($db,$no);
+			}
+			return $no;
+		}
+
+	    /**
+	     * 跳转链接
+	     */
+	    public function trulLogin()
+	    {
+	    	$url = './index.php?g=Wap&m=Userinfo&a=login';
+	    	echo '<script type="text/javascript">alert("您未登录，正在跳转到登录页面");window.location.href = "'.$url.'"; </script>';
+	    }
+
+    	/**
+    	  * 从1转到一，二，三方法...
+    	  * @param $list : 二维数组
+    	  */
+    	public function getvideo($list = array())
+    	{
+	    	foreach ($list as $k => $v) {
+	    		$kpai = array(1,2,3,4,5,6,7,8,9);
+	    		$kpaiQ = array('二','三','四','五','六','七','八','九','十');
+				// 判断是否是$k = 0（第一名）
+	    		if($k == 0)
+	    		{
+	    			$kpaiRe = str_replace('0', '一', $k);
+	    		}else{
+	    			$kpaiRe = $this->numToWord($k);
+	    		}
+	    		$list[$k]['paixu'] = $kpaiRe;
+	    		$list[$k]['kp'] = $k;
+	    	}
+
+	    	return $list;
+    	}
+
+		/**
 		* 把数字1-1亿换成汉字表述，如：123->一百二十三
+		* each : 以上的$this->getvideo();
 		* @param [num] $num [数字]
 		* @return [string] [string]
 		*/
@@ -658,106 +391,36 @@ if(empty($_COOKIE['pc_mendian'])){
 
 			$num_str = (string)$num;
 			$count = strlen($num_str);
-		$last_flag = true; //上一个 是否为0
-		$zero_flag = true; //是否第一个
-		$temp_num = null; //临时数字
+			$last_flag = true; //上一个 是否为0
+			$zero_flag = true; //是否第一个
+			$temp_num = null; //临时数字
 
-		$chiStr = '';//拼接结果
-		if ($count == 2) {//两位数
-			$temp_num = $num_str[0];
-			$chiStr = $temp_num == 1 ? $chiUni[1] : $chiNum[$temp_num].$chiUni[1];
-			$temp_num = $num_str[1];
-			$chiStr .= $temp_num == 0 ? '' : $chiNum[$temp_num]; 
-		}else if($count > 2){
-			$index = 0;
-			for ($i=$count-1; $i >= 0 ; $i--) { 
-				$temp_num = $num_str[$i];
-				if ($temp_num == 0) {
-					if (!$zero_flag && !$last_flag ) {
-						$chiStr = $chiNum[$temp_num]. $chiStr;
-						$last_flag = true;
+			$chiStr = '';//拼接结果
+			if ($count == 2) {//两位数
+				$temp_num = $num_str[0];
+				$chiStr = $temp_num == 1 ? $chiUni[1] : $chiNum[$temp_num].$chiUni[1];
+				$temp_num = $num_str[1];
+				$chiStr .= $temp_num == 0 ? '' : $chiNum[$temp_num]; 
+			}else if($count > 2){
+				$index = 0;
+				for ($i=$count-1; $i >= 0 ; $i--) { 
+					$temp_num = $num_str[$i];
+					if ($temp_num == 0) {
+						if (!$zero_flag && !$last_flag ) {
+							$chiStr = $chiNum[$temp_num]. $chiStr;
+							$last_flag = true;
+						}
+					}else{
+						$chiStr = $chiNum[$temp_num].$chiUni[$index%9] .$chiStr;
+						$zero_flag = false;
+						$last_flag = false;
 					}
-				}else{
-					$chiStr = $chiNum[$temp_num].$chiUni[$index%9] .$chiStr;
-					$zero_flag = false;
-					$last_flag = false;
+					$index ++;
 				}
-				$index ++;
+			}else{
+				$chiStr = $chiNum[$num_str[0]]; 
 			}
-		}else{
-			$chiStr = $chiNum[$num_str[0]]; 
+			return $chiStr;
 		}
-		return $chiStr;
-	}
+
 }
-
-/***************  li变单选  *****************/
-// html
-						<dd id="xm" value="radio">
-                        <ul>
-                            <li class="but1 checked" value="1">男单</li>
-                            <li class="but1" value="2">男双</li>
-                        </ul>
-                        <ul>
-                            <li class="but1 color-8309ff" value="3">女单</li>
-                            <li class="but1 color-8309ff" value="4">女双</li>
-                        </ul>
-                        <ul>
-                            <li class="but1 color-ffce09" value="5">混双</li>
-                        </ul>
-                        <input type="hidden" id="ul1_value" value="1">
-                    </dd>
-
-// js
-	$("#xm li").click(function(){
-      $(this).toggleClass("checked");
-      $("#xm li[value!='"+ $(this).attr("value")+"']").removeClass("checked");
-
-      if($(this).attr("class").indexOf("checked") > 0){
-       ul1_value = $(this).attr("value");
-      }else{
-        ul1_value = 1;
-      }
-      $("#ul1_value").val(ul1_value);
-      ul1_value = "";
-     });
-
-
-/***************  微信预览图片接口  *****************/
-//js 
-<script type="text/javascript" src="http://res.wx.qq.com/open/js/jweixin-1.0.0.js"></script>
-
-
-if( window.addEventListener ){
-            window.addEventListener('load', function() {
-                
-                var imgs = $('#pb1').find("img"),//查找要放大的图片
-
-                    imgsSrc = [],
-                    minWidth = 0;;
-                
-                for( var i=0,l=imgs.length; i<l; i++ ){
-                    var src = imgs[i].src;
-                    if( src ){
-                        imgsSrc.push(src);
-                        (function(src){
-                            imgs[i].addEventListener('click', function(){
-                                reviewImage(src);
-                            });
-                        })(src);
-                    }
-                }
-        
-                function reviewImage(src) {
-                    if (typeof window.WeixinJSBridge != 'undefined') {
-                        WeixinJSBridge.invoke('imagePreview', {
-                            'current' : src,
-                            'urls' : imgsSrc
-                        });
-                    }
-                }
-            }, false);
-        }
-
-
-?>
