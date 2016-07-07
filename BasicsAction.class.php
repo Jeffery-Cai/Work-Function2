@@ -422,5 +422,28 @@ class BasicsAction extends UserAction
 			}
 			return $chiStr;
 		}
+		
+		/**
+	     * 生成唯一号 ( 查询二维数组最终支持版，递归方式 )
+	     * @param $db : 数据表姓名
+	     * @param $no : 参数可不填写
+	     */
+		public function sn($db,$no)
+			{
+			global $no;
+			$data = M('data')->order('start asc')->select();
+			$rdata = array_rand($data,1);
+			$a = mt_rand($data[$rdata]['start'],$data[$rdata]['num_end']);
+			$a = sprintf("%07d",$a);
+			$no = $a;
+			$where['num'] = $no;
+			// echo json_encode(array($no));exit;
+			$info = M("$db")->field('id,num')->where($where)->select();
+			if(!empty($info) && $no)
+			{
+				$this->sn($db,$no);
+			}
+			return $no;
+		}
 
 }
