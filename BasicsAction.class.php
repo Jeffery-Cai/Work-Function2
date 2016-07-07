@@ -425,6 +425,7 @@ class BasicsAction extends UserAction
 		
 		/**
 	     * 生成唯一号 ( 查询二维数组最终支持版，递归方式 )
+		 * 作用 ： 用来查询所有数据（二维数组），进行随机抽奖
 	     * @param $db : 数据表姓名
 	     * @param $no : 参数可不填写
 	     */
