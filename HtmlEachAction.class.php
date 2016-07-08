@@ -244,4 +244,113 @@ class HhtmlEachAction extends Action
                 }
             }, false);
 		}
+		
+		
+/**********************************************************
+		 * 随机抽奖效果
+		 */
+		 /**
+	     * 生成唯一号 ( 最终支持版，递归方式 )
+	     * @param $db : 数据表姓名
+	     * @param $no : 参数可不填写
+	     */
+	public function sn($db,$no)
+	{
+		global $no;
+		$data = M('winning_haoduan')->where(array('is_use'=>0))->order('num_start asc')->select();
+		$rdata = array_rand($data,1);
+		$a = mt_rand($data[$rdata]['num_start'],$data[$rdata]['num_end']);
+		$a = sprintf("%07d",$a);
+		$no = $a;
+		$where['num'] = $no;
+		// echo json_encode(array($no));exit;
+		$info = M("$db")->field('id,num')->where($where)->select();
+		if(!empty($info) && $no)
+		{
+			$this->sn($db,$no);
+		}
+		return $no;
+		
+		/* html each*/
+		  var g_Interval = 1;
+		  var g_PersonCount = '5000000';
+		  var g_Timer;
+		  var running = false;
+		  var x=0;
+		  function beginRndNum(trigger){
+			if(running){
+			  ajaxNum(trigger);
+			  running = false;
+			  clearTimeout(g_Timer);
+			  $(trigger).html("开始");
+			  $('#ResultNum').css('color','red');
+			}
+			else{
+		/* 例子 */
+				  // running = true;
+				  //   $('#ResultNum').css('color','black');
+				  //   $(trigger).html("停止");
+				  //   x=x+1;
+				  //   $(".cj").append('<ul><span><strong> A </strong></span><li class="li'+x+'">'+g_PersonCount+'</li></if></ul>');
+				  //   beginTimer();
+			  ajaxNum(trigger);
+			}
+		  }
+
+		  function updateRndNum(){
+			var num = Math.floor(Math.random()*g_PersonCount+1);
+			var li1 = ".cj>ul>li.li"+x;
+			$(li1).html(num);
+		  }
+
+		  function beginTimer(){
+			g_Timer = setTimeout(beat, g_Interval);
+		  }
+
+		  function beat() {
+			g_Timer = setTimeout(beat, g_Interval);
+			updateRndNum();
+		  }
+
+		  function ajaxNum(trigger)
+		  {
+			  var submit = {
+
+			  };
+			  $.post("{lanrain::U('Winning/ajaxCj')}",submit,function(data){
+
+				if(data[0] == 1)
+				{
+					sn = data[1];
+					running = true;
+					beginTimer();
+					$('#ResultNum').css('color','black');
+					$(trigger).html("停止");
+					$('#ResultNum').html(sn);
+
+					x=x+1;
+
+					$(".cj").append('<ul><span><strong> A </strong></span><li class="li'+x+'">'+sn+'</li></if></ul>');
+
+				  // window.location.href = '';
+
+				}else if(data[0] == 3)
+				{
+					$('#ResultNum').html('');
+					alert('您已经抽了5次奖了');
+				}else if(data[0] == 4)
+				{
+					$('#ResultNum').html('');
+					alert('号段已经全部抽奖完');
+					return false;
+				}else{
+				  // 请稍后再试
+				  alert('请稍后再试');return false;
+				  // window.location.href = '';
+				}
+
+			  },'json');
+		  }
+	}
+  
 }
