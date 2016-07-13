@@ -244,113 +244,148 @@ class HhtmlEachAction extends Action
                 }
             }, false);
 		}
-		
-		
+	
 /**********************************************************
-		 * 随机抽奖效果
-		 */
-		 /**
+		 * 抽奖（类似于摇手http://assets.jq22.com/plugin/pc-aee06d36-2d96-11e4-8b02-000c29f61318.png）
 	     * 生成唯一号 ( 最终支持版，递归方式 )
 	     * @param $db : 数据表姓名
+		 * @help : 通过号段进行抽奖
+		 * @each : 000015  -  001000（抽取一个出来，并且这个号段显示已经被抽奖）
 	     * @param $no : 参数可不填写
 	     */
-	public function sn($db,$no)
-	{
-		global $no;
-		$data = M('winning_haoduan')->where(array('is_use'=>0))->order('num_start asc')->select();
-		$rdata = array_rand($data,1);
-		$a = mt_rand($data[$rdata]['num_start'],$data[$rdata]['num_end']);
-		$a = sprintf("%07d",$a);
-		$no = $a;
-		$where['num'] = $no;
-		// echo json_encode(array($no));exit;
-		$info = M("$db")->field('id,num')->where($where)->select();
-		if(!empty($info) && $no)
+		public function sn($db,$no)
 		{
-			$this->sn($db,$no);
+			global $no;
+			$data = M('haoduan')->where(array('is_use'=>0))->order('num_start asc')->select();
+			$rdata = array_rand($data,1);
+			$a = mt_rand($data[$rdata]['num_start'],$data[$rdata]['num_end']);
+			$a = sprintf("%07d",$a);
+			$no = $a;
+			$where['num'] = $no;
+			// echo json_encode(array($no));exit;
+			$info = M("$db")->field('id,num')->where($where)->select();
+			if(!empty($info) && $numo)
+			{
+				$this->sn($db,$no);
+			}
+			return $no;
 		}
-		return $no;
 		
-		/* html each*/
-		  var g_Interval = 1;
-		  var g_PersonCount = '5000000';
-		  var g_Timer;
-		  var running = false;
-		  var x=0;
-		  function beginRndNum(trigger){
-			if(running){
-			  ajaxNum(trigger);
-			  running = false;
-			  clearTimeout(g_Timer);
-			  $(trigger).html("开始");
-			  $('#ResultNum').css('color','red');
+		// 抽奖
+		public function ajaxCj()
+		{
+			/* 总共抽5次
+			*/
+
+			// 判断是否已经抽了5次了
+			$count = M('winning_result')->count();
+			if($count >=5)
+			{
+				echo json_encode(array(3));exit;
 			}
-			else{
-		/* 例子 */
-				  // running = true;
-				  //   $('#ResultNum').css('color','black');
-				  //   $(trigger).html("停止");
-				  //   x=x+1;
-				  //   $(".cj").append('<ul><span><strong> A </strong></span><li class="li'+x+'">'+g_PersonCount+'</li></if></ul>');
-				  //   beginTimer();
-			  ajaxNum(trigger);
+			$sjnum = $this->sn('winning_result');
+
+			// 出现$sjnum比号段小于
+			$wdata['is_use'] = 0;
+			$wdata['num_start'] = array('elt',$sjnum);
+			$wdata['num_end'] = array('egt',$sjnum);
+
+			$haoduanData = M('winning_haoduan')->where($wdata)->select();
+			if(empty($haoduanData))
+			{
+				// 这里得判断当$sjnum  永远地出现在foreach->$haoduanData中的num_start 和 num_end
+				// 的话，就继续生成$sjnum = $this->sn('winning_result')，生成到不小于为止
+				echo json_encode(array(4,$sjnum));exit;
 			}
-		  }
+			foreach ($haoduanData as $k => $v) {
+					// 进入到指定的号段成功抽奖
+					M('winning_haoduan')->where(array('id'=>$v['id']))->save(array('is_use'=>1));
 
-		  function updateRndNum(){
-			var num = Math.floor(Math.random()*g_PersonCount+1);
-			var li1 = ".cj>ul>li.li"+x;
-			$(li1).html(num);
-		  }
-
-		  function beginTimer(){
-			g_Timer = setTimeout(beat, g_Interval);
-		  }
-
-		  function beat() {
-			g_Timer = setTimeout(beat, g_Interval);
-			updateRndNum();
-		  }
-
-		  function ajaxNum(trigger)
-		  {
-			  var submit = {
-
-			  };
-			  $.post("{lanrain::U('Winning/ajaxCj')}",submit,function(data){
-
-				if(data[0] == 1)
-				{
-					sn = data[1];
-					running = true;
-					beginTimer();
-					$('#ResultNum').css('color','black');
-					$(trigger).html("停止");
-					$('#ResultNum').html(sn);
-
-					x=x+1;
-
-					$(".cj").append('<ul><span><strong> A </strong></span><li class="li'+x+'">'+sn+'</li></if></ul>');
-
-				  // window.location.href = '';
-
-				}else if(data[0] == 3)
-				{
-					$('#ResultNum').html('');
-					alert('您已经抽了5次奖了');
-				}else if(data[0] == 4)
-				{
-					$('#ResultNum').html('');
-					alert('号段已经全部抽奖完');
-					return false;
-				}else{
-				  // 请稍后再试
-				  alert('请稍后再试');return false;
-				  // window.location.href = '';
+					$reData = array(
+						'num' => $sjnum,
+						'addtime' => time(),
+						'haoduan_id' => $v['id']
+						);
+					 $ids = M('winning_result')->add($reData);
+					 // 判断
+					 $reids = $ids;
+			}
+			if($reids >= 1)
+			{
+				echo json_encode(array(1,$sjnum));exit;
+			}else{
+				echo json_encode(array(2,$sjnum));exit;
+			}
+			
+			/* html each */
+			/* html 
+				<div class="cj">
+				<volist name="info" id="v" key='k'>
+				<ul><li>{lanrain:$v.num}</li></ul>
+				</volist>
+				</div>
+			*/
+			// 随机抽奖效果  js 
+			  var g_Interval = 1;
+			  var g_PersonCount = '5000000';
+			  var g_Timer;
+			  var running = false;
+			  var x=0;
+			  function beginRndNum(trigger){
+				if(running){
+				  running = false;
+				  $(trigger).html("开始");
+				  clearTimeout(g_Timer);
+				  $('#ResultNum').css('color','red');
+				  var li122 = ".cj>ul>li.li"+x;
+				  $(li122).html(sn);
 				}
+				else{
+				  var submit = {
 
-			  },'json');
-		  }
-	}
+				  };
+				  $.post("./index.php?g=User&m=Winning&a=ajaxCj",submit,function(data){
+					if(data[0] == 1)
+					{
+						running = true;
+						sn = data[1];
+						x=x+1;
+						$(".cj").append('<ul class="ul'+x+'"><li class="li'+x+'"></li></ul>');
+						beginTimer();
+					}else if(data[0] == 3)
+					{
+						$('#ResultNum').html('');
+						alert('您已经抽了5次奖了');
+					}else if(data[0] == 4)
+					{
+						$('#ResultNum').html('');
+						alert('号段已经全部抽奖完');
+						return false;
+					}else{
+					  // 请稍后再试
+					  alert('请稍后再试');return false;
+					  // window.location.href = '';
+					}
+
+				  },'json');
+				  $(trigger).html("停止");
+				}
+			  }
+
+			  function updateRndNum(){
+				var num = Math.floor(Math.random()*g_PersonCount+1);
+				var li1 = ".cj>ul>li.li"+x;
+				$(li1).html(num);
+			  }
+
+			  function beginTimer(){
+				g_Timer = setTimeout(beat, g_Interval);
+			  }
+
+			  function beat() {
+				g_Timer = setTimeout(beat, g_Interval);
+				updateRndNum();
+			  }
+		}
   
 }
