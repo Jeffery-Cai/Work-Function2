@@ -9,7 +9,7 @@
 class HhtmlEachAction extends Action
 {
 	/**
-	 * 批量生成随机不重复用户的抽奖码
+	 * <a name="html1">批量生成随机不重复用户的抽奖码</a>
 	 */
 	public function set中奖()
 	{
