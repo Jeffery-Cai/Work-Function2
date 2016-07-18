@@ -244,7 +244,16 @@ class HhtmlEachAction extends Action
                 }
             }, false);
 		}
-	
+
+/************   匹配出菜单,添加a新窗口 ****************/
+        	var turl = $("#Menu dd ul li").eq(4).find('a');
+        	// console.log(turl.attr('href'));
+        	if(turl.attr('href') == 'index.php?g=User&m=Winning&a=cj&token=oieigr1387606536')
+        	{
+        		turl.parent().html('<a href="index.php?g=User&m=Winning&a=cj&token=oieigr1387606536"  target="_blank">好礼大抽奖</a>');
+        	}
+		
+		
 /**********************************************************
 		 * 抽奖（类似于摇手http://assets.jq22.com/plugin/pc-aee06d36-2d96-11e4-8b02-000c29f61318.png）
 	     * 生成唯一号 ( 最终支持版，递归方式 )
