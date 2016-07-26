@@ -518,6 +518,13 @@ class BasicsAction extends UserAction
 	        return $data;
 	    }
 	}
-		
+	
+	/* 按照首字母排序
+		原始版
+	*/
+	public function sortIndexZm()
+	{
+		return M('table')->order('convert(firm_name using gb2312) asc')->select();
+	}
 
 }
