@@ -526,5 +526,6 @@ class BasicsAction extends UserAction
 	{
 		return M('table')->order('convert(firm_name using gb2312) asc')->select();
 	}
+	
 
 }

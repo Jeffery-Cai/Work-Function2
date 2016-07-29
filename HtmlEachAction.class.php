@@ -396,5 +396,22 @@ class HhtmlEachAction extends Action
 				updateRndNum();
 			  }
 		}
-  
+		
+		
+	/* 按照首字母排序 
+		终结版
+		可参照BasicsAction.class.php中的函数
+	*/
+	public function 首字母()
+	{
+		$list = array(array());  //二维数组 
+		//取首字母排序  // BasicsAction.class.php  中的排序函数
+        foreach ($list as $k => $v) {
+               $list[$k]['sort'] = strtolower($this->_getFirstCharter($v['name'])); //取出汉字的第一个首字母
+        }
+
+         $list = $this->sortarr($list,order_sn,SORT_ASC);    // BasicsAction.class.php  中的排序函数
+         $list =  array_merge($list);
+		 return $list;
+	}
 }
