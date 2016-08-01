@@ -414,4 +414,24 @@ class HhtmlEachAction extends Action
          $list =  array_merge($list);
 		 return $list;
 	}
+	
+	/* 删除当前图片路径 */
+	public function delImgUrlIndex()
+	{
+		$imgname = trim($_POST['imgname']);  // 判断图片是否为空
+		if(empty($imgname))
+		{
+			echo json_encode(array(2));exit;
+		}
+		$oldpath = $imgname;//原路径
+		if(file_exists($oldpath)){
+			$status = M('table')->where(array('id'=>trim($_POST['id'])))->save(array('touxiang'=>''));
+			unlink($oldpath);//删除文件
+			echo json_encode(array(1,$status));exit;
+			clearstatcache();//清空缓存
+		}else{
+			$status = M('table')->where(array('id'=>trim($_POST['id'])))->save(array('touxiang'=>''));
+			echo json_encode(array(2));exit;
+		}
+	}
 }
