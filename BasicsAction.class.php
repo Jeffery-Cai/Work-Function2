@@ -585,13 +585,13 @@ class BasicsAction extends UserAction
 		// dump(strlen('callback&&callback'));
 		$json = substr($json,19,-1);
 		$json = json_decode($json,true);
-		dump($json);
+		// dump($json);
 		$i = 10;  // 10个周围地址
 		if($json['status'] == 200)
 		{
 			echo '你当前位置：'.$json['result'][0]['address'];
 			// 周围位置
-			echo '<br>';
+			echo '<br> 周围坐标';
 			dump($this->returnSquarePoint($lng,$lat));
 			// for ($i=0; $i <=10 ; $i++) {
 
@@ -636,7 +636,7 @@ class BasicsAction extends UserAction
 	      
 	      public function globalCurlGet($url,$data){
 	      	$ch = curl_init();
-	      	$header = "Access-Control-Allow-Origin:*";
+	      	$header[] = "Access-Control-Allow-Origin:*";
 	      	curl_setopt($ch, CURLOPT_URL, $url);
 	      	curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET");
 	      	curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
