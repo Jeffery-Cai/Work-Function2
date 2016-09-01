@@ -592,7 +592,7 @@ class BasicsAction extends UserAction
 			echo '你当前位置：'.$json['result'][0]['address'];
 			// 周围位置
 			echo '<br> 周围坐标';
-			dump($this->returnSquarePoint($lng,$lat));
+			var_dump($this->returnSquarePoint($lng,$lat));
 			// for ($i=0; $i <=10 ; $i++) {
 
 			// }
