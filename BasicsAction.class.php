@@ -573,4 +573,83 @@ class BasicsAction extends UserAction
 		        return $strlen == 2 ? $firstStr . str_repeat('*', mb_strlen($user_name, 'utf-8') - 1) : $firstStr . str_repeat("*", $strlen - 2) . $lastStr;
 		}
 
+
+		// 使用经纬度查找当前位置
+	public function findCurrentMap()
+	{
+		$lat='23.1304880000';
+		$lng='113.3684990000';
+
+		$url = 'http://www.gpsspg.com/apis/maps/geo/?output=jsonp&lat='.$lat.'&lng='.$lng.'&type=2';
+		$json = $this->globalCurlGet($url,$data = array());
+		// dump(strlen('callback&&callback'));
+		$json = substr($json,19,-1);
+		$json = json_decode($json,true);
+		dump($json);
+		$i = 10;  // 10个周围地址
+		if($json['status'] == 200)
+		{
+			echo '你当前位置：'.$json['result'][0]['address'];
+			// 周围位置
+			echo '<br>';
+			dump($this->returnSquarePoint($lng,$lat));
+			// for ($i=0; $i <=10 ; $i++) {
+
+			// }
+		}else{
+			echo '没有数据';exit;
+		}
+	}
+
+
+	//获取周围坐标
+	public function returnSquarePoint($lng, $lat,$distance = 100.5){
+		$earthRadius = 6378138;
+		$dlng =  2 * asin(sin($distance / (2 * $earthRadius)) / cos(deg2rad($lat)));
+		$dlng = rad2deg($dlng);
+		$dlat = $distance/$earthRadius;
+		$dlat = rad2deg($dlat);
+		return array(
+			'left-top'=>array('lat'=>$lat + $dlat,'lng'=>$lng-$dlng),
+			'right-top'=>array('lat'=>$lat + $dlat, 'lng'=>$lng + $dlng),
+			'left-bottom'=>array('lat'=>$lat - $dlat, 'lng'=>$lng - $dlng),
+			'right-bottom'=>array('lat'=>$lat - $dlat, 'lng'=>$lng + $dlng)
+			);
+	}
+	   //计算两个坐标的直线距离
+	
+	public function getDistance($lat1, $lng1, $lat2, $lng2){      
+	          $earthRadius = 6378138; //近似地球半径米
+	          // 转换为弧度
+	          $lat1 = ($lat1 * pi()) / 180;
+	          $lng1 = ($lng1 * pi()) / 180;
+	          $lat2 = ($lat2 * pi()) / 180;
+	          $lng2 = ($lng2 * pi()) / 180;
+	          // 使用半正矢公式  用尺规来计算
+	          $calcLongitude = $lng2 - $lng1;
+	          $calcLatitude = $lat2 - $lat1;
+	          $stepOne = pow(sin($calcLatitude / 2), 2) + cos($lat1) * cos($lat2) * pow(sin($calcLongitude / 2), 2);  
+	          $stepTwo = 2 * asin(min(1, sqrt($stepOne)));
+	          $calculatedDistance = $earthRadius * $stepTwo;
+	          return round($calculatedDistance);
+	      }
+	      
+	      public function globalCurlGet($url,$data){
+	      	$ch = curl_init();
+	      	$header = "Access-Control-Allow-Origin:*";
+	      	curl_setopt($ch, CURLOPT_URL, $url);
+	      	curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET");
+	      	curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
+	      	curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, FALSE);
+	      	curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
+	      	curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (compatible; MSIE 5.01; Windows NT 5.0)');
+	      	curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+	      	curl_setopt($ch, CURLOPT_AUTOREFERER, 1);
+	      	curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+	      	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+	      	$temp = curl_exec($ch);
+	      	curl_close($ch);
+	      	return $temp;
+	      }
+
 }
