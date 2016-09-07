@@ -651,5 +651,33 @@ class BasicsAction extends UserAction
 	      	curl_close($ch);
 	      	return $temp;
 	      }
+	/*
+	算概率
+	@param : 
+		$prize_arr =array(
+				'1'=>70,
+				'2'=>20,
+				'3'=>10
+		);
+	@help : 数字越大中的概率就越大
+		$num = get_rand($prize_arr);
+	*/
+	public function get_rand($proArr) { 
+	    $result = ''; 
+	    //概率数组的总概率精度 
+	    $proSum = array_sum($proArr); 
+	    //概率数组循环 
+	    foreach ($proArr as $key => $proCur) { 
+	        $randNum = mt_rand(1, $proSum);             //抽取随机数
+	        if ($randNum <= $proCur) { 
+	            $result = $key;                         //得出结果
+	            break; 
+	        } else { 
+	            $proSum -= $proCur;                     
+	        } 
+	    } 
+	    unset ($proArr); 
+	    return $result; 
+	}
 
 }
