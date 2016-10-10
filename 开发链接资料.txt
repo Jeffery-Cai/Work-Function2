@@ -4,3 +4,5 @@ http://dashboard.daovoice.io/#/get-started
 http://docs.daocloud.io/daovoice-quickstart/install
 
 
+2、在线生成二维码接口
+http://qrcode.shuogesha.com/qrcode?pixel=400_400&content=http://www.lovelaodou.com/mobile/download_app.php?mdcode=1
