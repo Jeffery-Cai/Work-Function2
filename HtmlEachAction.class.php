@@ -434,4 +434,114 @@ class HhtmlEachAction extends Action
 			echo json_encode(array(2));exit;
 		}
 	}
+
+	/* 微信公众号 + 腾讯API接口获取当前地理位置 */
+
+	public function 微信_腾讯API接口获取当前地理位置()
+	{
+		// js sdk
+		// $signPackage = array(
+		// 		"access_token"=>$access_token,
+		// 		"appId"     => $appid,
+		// 		"nonceStr"  => $nonceStr,
+		// 		"timestamp" => $times,
+		// 		"url"       => $url,
+		// 		"signature" => $rewstr,
+		// 		"rawString" => $string
+		// );
+		if($_POST){
+            $lat = isset($_REQUEST['lat'])?trim($_REQUEST['lat']):'';
+            $lng = isset($_REQUEST['lng'])?trim($_REQUEST['lng']):'';
+            if($lat == '' || $lng == ''){
+                echo json_encode(array('0','请确保手机允许开启定位'));exit;
+            }
+
+            // session('lat',$lat);
+            // session('lng',$lng);
+
+            $res = $this->findCurrentMap($lat,$lng);
+            if($res){
+                echo json_encode(array('1',$res));exit;
+            }else{
+                echo json_encode(array('-1','定位获取失败，请用微信打开'));exit;
+            }
+        }
+        $this->assign('time',time());
+
+        // html
+        	<script src="http://res.wx.qq.com/open/js/jweixin-1.0.0.js"></script>
+        	var wecha_id = '{lanrain:$signPackage.wecha_id}';
+            var timestamp='{lanrain:$signPackage.timestamp}';
+            var noncestr='{lanrain:$signPackage.nonceStr}';
+            var url = '{lanrain:$signPackage.url}';
+            var appid = '{lanrain:$signPackage.appId}';
+            var signature = '{lanrain:$signPackage.signature}';
+
+
+            wx.config({
+                debug: false, // 开启调试模式,调用的所有api的返回值会在客户端Jacky._alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。
+                appId: appid, // 必填，公众号的唯一标识
+                timestamp: timestamp, // 必填，生成签名的时间戳
+                nonceStr: noncestr, // 必填，生成签名的随机串
+                signature: signature,// 必填，签名，见附录1
+                jsApiList: ['onMenuShareAppMessage','onMenuShareTimeline']
+            });
+            wx.ready(function(){
+                  wx.getLocation({
+                        type: 'wgs84', // 默认为wgs84的gps坐标，如果要返回直接给openLocation用的火星坐标，可传入'gcj02'
+                        success: function (res) {
+                            var latitude = res.latitude; // 纬度，浮点数，范围为90 ~ -90
+                            var longitude = res.longitude; // 经度，浮点数，范围为180 ~ -180。
+                            var speed = res.speed; // 速度，以米/每秒计
+                            var accuracy = res.accuracy; // 位置精度
+                            //alert('纬度'+latitude+' - 经度'+longitude+ '- 速度 ' +speed + ' - 位置精度'+accuracy);
+                    var submitData = {
+                        lat  :  latitude,
+                        lng  :  longitude
+                    };
+                    $.post('index.php?g=Wap&m=微信_腾讯API接口获取当前地理位置()&a=微信_腾讯API接口获取当前地理位置()', submitData,
+                        function(data) {
+                            if(data[0]==1){  
+                                $('#location').html(data[1]); // 当前位置
+                                return false;
+                            }else{
+                                alert(data[1]);return false;
+                            }
+                        },
+                        "json");
+
+                                    }
+                    });
+            });
+	}
+
+	//获取当前位置
+    public function findCurrentMap($lat,$lng)
+    {
+        $key = '36EBZ-RZ2KR-JCIWK-WULMW-E4FY7-35F5J';//开发密钥
+        $type = 1;//坐标类型
+        $url = 'http://apis.map.qq.com/ws/geocoder/v1/?location='.$lat.','.$lng.'&key='.$key.'&coord_type='.$type;
+        $json = $this->globalCurlGet($url,$data = array());
+        $res = json_decode($json,true);
+        // return $res['result']['address'];
+        return $res['result']['formatted_addresses']['recommend'];
+    }
+
+    public function globalCurlGet($url,$data){
+        $ch = curl_init();
+        $header[] = "Accept-Charset: utf-8";
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET");
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, FALSE);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
+        curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (compatible; MSIE 5.01; Windows NT 5.0)');
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+        curl_setopt($ch, CURLOPT_AUTOREFERER, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $temp = curl_exec($ch);
+        curl_close($ch);
+        return $temp;
+    }
 }
