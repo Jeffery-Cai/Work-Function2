@@ -680,4 +680,16 @@ class BasicsAction extends UserAction
 	    return $result; 
 	}
 
+	/*
+	 * 新增获取上个月第一天时间戳
+	 * [0]为上个月第一天
+	 * [1]上个月最后一天
+	 */
+	function getTimeNone()
+    {
+        $upMonth = strtotime(date('Y-m-1',strtotime("-1 month")).' 00:00:00'); // 上个月第一天
+        $lastMonth = strtotime(date('Y-m-t',strtotime("-1 month")).' 23:59:59'); // 上个月最后一天
+        return array($upMonth,$lastMonth);
+    }
+
 }
