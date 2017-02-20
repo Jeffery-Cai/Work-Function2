@@ -527,6 +527,57 @@ class HhtmlEachAction extends Action
         return $res['result']['formatted_addresses']['recommend'];
     }
 
+/* 微信扫一扫代码 */
+    <script src="http://res.wx.qq.com/open/js/jweixin-1.0.0.js"></script>
+    <script type="text/javascript">
+
+    /* 如果有扫二维码接口的话，直接下一步 */
+
+        $("#action").click(function()
+        {
+            var erweicode = $("#erweicode").val();
+            $.post("{lanrain::U('d/d')}",{erweicode:erweicode},function(data){
+                    if(data == 1)
+                    {
+                        window.location.href="{lanrain::U('d/d')}";
+                    }
+
+                },'json');
+        });
+
+
+        var timestamp='{lanrain:$signPackage.timestamp}';
+        var noncestr='{lanrain:$signPackage.nonceStr}';
+        var url = '{lanrain:$signPackage.url}';
+        var appid = '{lanrain:$signPackage.appId}';
+        var signature = '{lanrain:$signPackage.signature}';
+
+        wx.config({
+            debug: false, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。
+            appId: appid, // 必填，公众号的唯一标识
+            timestamp: timestamp, // 必填，生成签名的时间戳
+            nonceStr: noncestr, // 必填，生成签名的随机串
+            signature: signature,// 必填，签名，见附录1
+            jsApiList: ['scanQRCode']
+        });
+
+    // 扫二维码
+        $(".pos").click(function()
+        {
+            wx.ready(function(){
+                wx.scanQRCode({
+                    needResult: 1, // 默认为0，扫描结果由微信处理，1则直接返回扫描结果，
+                    scanType: ["qrCode","barCode"], // 可以指定扫二维码还是一维码，默认二者都有
+                    success: function (res) {
+                        /* 作ajax传输过去 */
+                        var result = res.resultStr;
+                        $("#erweicode").val(result);
+                    }
+                });
+            });
+        });
+    </script>
+
     public function globalCurlGet($url,$data){
         $ch = curl_init();
         $header[] = "Accept-Charset: utf-8";
@@ -544,4 +595,6 @@ class HhtmlEachAction extends Action
         curl_close($ch);
         return $temp;
     }
+
+
 }
